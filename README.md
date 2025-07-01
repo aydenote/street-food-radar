@@ -1,4 +1,6 @@
-# 길거리 음식 레이더
+# 길거리 맛집 지도
+
+## 배포 링크 : https://street-food-radar.lovable.app/
 ## 🎯 페르소나
 이름: 김태정
 나이: 28세
