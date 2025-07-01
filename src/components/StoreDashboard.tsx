@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -7,15 +7,47 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Store, MessageCircle, Settings, BarChart3, Clock } from "lucide-react";
 import ChatWindow from "./ChatWindow";
+import { useStores } from "@/hooks/useStores";
 
 interface StoreDashboardProps {
-  storeData: any;
+  userId: string;
   onLogout: () => void;
 }
 
-const StoreDashboard = ({ storeData, onLogout }: StoreDashboardProps) => {
-  const [isOpen, setIsOpen] = useState(true);
+const StoreDashboard = ({ userId, onLogout }: StoreDashboardProps) => {
+  const { getStoresByOwner, updateStoreStatus } = useStores();
+  const [userStores, setUserStores] = useState(getStoresByOwner(userId));
   const [showChat, setShowChat] = useState(false);
+
+  // 사용자의 가게 정보 업데이트
+  useEffect(() => {
+    setUserStores(getStoresByOwner(userId));
+  }, [userId, getStoresByOwner]);
+
+  // 첫 번째 가게 정보 (단일 가게 운영 가정)
+  const storeData = userStores[0];
+
+  if (!storeData) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>가게 정보 없음</CardTitle>
+            <CardDescription>등록된 가게 정보가 없습니다.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button onClick={onLogout} className="w-full">
+              로그아웃
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
+  const handleStatusChange = (isOpen: boolean) => {
+    updateStoreStatus(storeData.id, isOpen);
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -36,11 +68,11 @@ const StoreDashboard = ({ storeData, onLogout }: StoreDashboardProps) => {
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-600">영업상태</span>
                 <Switch
-                  checked={isOpen}
-                  onCheckedChange={setIsOpen}
+                  checked={storeData.isOpen}
+                  onCheckedChange={handleStatusChange}
                 />
-                <Badge variant={isOpen ? "default" : "secondary"} className={isOpen ? "bg-green-500" : "bg-red-500"}>
-                  {isOpen ? "영업중" : "영업종료"}
+                <Badge variant={storeData.isOpen ? "default" : "secondary"} className={storeData.isOpen ? "bg-green-500" : "bg-red-500"}>
+                  {storeData.isOpen ? "영업중" : "영업종료"}
                 </Badge>
               </div>
               <Button variant="outline" onClick={onLogout}>
@@ -95,8 +127,8 @@ const StoreDashboard = ({ storeData, onLogout }: StoreDashboardProps) => {
                 <CardHeader className="pb-2">
                   <CardDescription>현재 상태</CardDescription>
                   <CardTitle className="flex items-center gap-2">
-                    <div className={`w-3 h-3 rounded-full ${isOpen ? 'bg-green-500' : 'bg-red-500'}`}></div>
-                    {isOpen ? "영업중" : "영업종료"}
+                    <div className={`w-3 h-3 rounded-full ${storeData.isOpen ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                    {storeData.isOpen ? "영업중" : "영업종료"}
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -113,7 +145,7 @@ const StoreDashboard = ({ storeData, onLogout }: StoreDashboardProps) => {
                 <CardContent className="space-y-3">
                   <div>
                     <p className="text-sm font-medium text-gray-700">주소</p>
-                    <p className="text-sm text-gray-600">{storeData.address}</p>
+                    <p className="text-sm text-gray-600">{storeData.location.address}</p>
                   </div>
                   <div>
                     <p className="text-sm font-medium text-gray-700">연락처</p>
@@ -141,8 +173,8 @@ const StoreDashboard = ({ storeData, onLogout }: StoreDashboardProps) => {
                     <div className="flex items-center space-x-3">
                       <Clock className="w-4 h-4 text-gray-400" />
                       <div>
-                        <p className="text-sm">영업 시작</p>
-                        <p className="text-xs text-gray-500">2시간 전</p>
+                        <p className="text-sm">영업 상태 변경</p>
+                        <p className="text-xs text-gray-500">방금 전</p>
                       </div>
                     </div>
                     <div className="flex items-center space-x-3">

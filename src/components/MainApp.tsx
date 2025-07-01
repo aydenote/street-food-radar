@@ -4,8 +4,8 @@ import Header from "@/components/Header";
 import MapView from "@/components/MapView";
 import StoreList from "@/components/StoreList";
 import ChatWindow from "@/components/ChatWindow";
-import { mockStores } from "@/data/mockData";
-import { UserRole } from "@/types/user";
+import { useStores } from "@/hooks/useStores";
+import { UserRole } from "@/types/user"; 
 import { Button } from "@/components/ui/button";
 import { MessageCircle, X } from "lucide-react";
 
@@ -15,6 +15,7 @@ interface MainAppProps {
 }
 
 const MainApp = ({ userRole, onLogout }: MainAppProps) => {
+  const { stores } = useStores();
   const [selectedStore, setSelectedStore] = useState(null);
   const [searchLocation, setSearchLocation] = useState("현재 위치");
   const [showChat, setShowChat] = useState(false);
@@ -31,7 +32,7 @@ const MainApp = ({ userRole, onLogout }: MainAppProps) => {
       <div className="flex flex-col lg:flex-row h-[calc(100vh-80px)]">
         <div className="lg:w-1/2 h-64 lg:h-full">
           <MapView 
-            stores={mockStores} 
+            stores={stores} 
             selectedStore={selectedStore}
             onStoreSelect={setSelectedStore}
           />
@@ -39,7 +40,7 @@ const MainApp = ({ userRole, onLogout }: MainAppProps) => {
         
         <div className="lg:w-1/2 h-full overflow-y-auto">
           <StoreList 
-            stores={mockStores}
+            stores={stores}
             selectedStore={selectedStore}
             onStoreSelect={setSelectedStore}
             userRole={userRole}

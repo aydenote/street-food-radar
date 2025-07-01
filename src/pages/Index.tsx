@@ -5,11 +5,12 @@ import StoreRegistration from "@/components/StoreRegistration";
 import StoreDashboard from "@/components/StoreDashboard";
 import MainApp from "@/components/MainApp";
 import { User, UserRole } from "@/types/user";
+import { useStores } from "@/hooks/useStores";
 
 const Index = () => {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [showStoreRegistration, setShowStoreRegistration] = useState(false);
-  const [storeData, setStoreData] = useState(null);
+  const { addStore } = useStores();
 
   const handleLoginTypeSelect = (type: UserRole) => {
     if (type === 'store') {
@@ -30,14 +31,16 @@ const Index = () => {
       role: 'store',
       name: data.name
     };
+    
+    // 새 가게를 전역 스토어에 추가
+    const newStore = addStore(data, storeUser.id);
+    
     setCurrentUser(storeUser);
-    setStoreData(data);
     setShowStoreRegistration(false);
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
-    setStoreData(null);
     setShowStoreRegistration(false);
   };
 
@@ -53,8 +56,8 @@ const Index = () => {
 
   // 로그인된 상태
   if (currentUser) {
-    if (currentUser.role === 'store' && storeData) {
-      return <StoreDashboard storeData={storeData} onLogout={handleLogout} />;
+    if (currentUser.role === 'store') {
+      return <StoreDashboard userId={currentUser.id} onLogout={handleLogout} />;
     } else {
       return <MainApp userRole={currentUser.role} onLogout={handleLogout} />;
     }
