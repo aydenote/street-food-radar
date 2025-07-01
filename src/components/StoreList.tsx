@@ -1,7 +1,9 @@
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Clock, Menu } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { MapPin, Clock, Menu, MessageCircle } from "lucide-react";
+import { UserRole } from "@/types/user";
 
 interface Store {
   id: string;
@@ -21,9 +23,11 @@ interface StoreListProps {
   stores: Store[];
   selectedStore: Store | null;
   onStoreSelect: (store: Store) => void;
+  userRole: UserRole;
+  onChatOpen?: (store: Store) => void;
 }
 
-const StoreList = ({ stores, selectedStore, onStoreSelect }: StoreListProps) => {
+const StoreList = ({ stores, selectedStore, onStoreSelect, userRole, onChatOpen }: StoreListProps) => {
   return (
     <div className="p-4 space-y-4">
       <div className="flex items-center justify-between mb-4">
@@ -65,7 +69,7 @@ const StoreList = ({ stores, selectedStore, onStoreSelect }: StoreListProps) => 
               <span className="truncate">{store.location.address}</span>
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-2 mb-3">
               <div className="flex items-center text-sm text-gray-600">
                 <Menu className="w-4 h-4 mr-1" />
                 <span>대표 메뉴</span>
@@ -88,12 +92,35 @@ const StoreList = ({ stores, selectedStore, onStoreSelect }: StoreListProps) => 
               </div>
             </div>
             
-            {store.isOpen && (
-              <div className="mt-3 flex items-center text-xs text-green-600">
-                <Clock className="w-3 h-3 mr-1" />
-                <span>지금 주문 가능</span>
-              </div>
-            )}
+            <div className="flex items-center justify-between">
+              {store.isOpen && (
+                <div className="flex items-center text-xs text-green-600">
+                  <Clock className="w-3 h-3 mr-1" />
+                  <span>지금 주문 가능</span>
+                </div>
+              )}
+              
+              {userRole !== 'guest' && store.isOpen && onChatOpen && (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="ml-auto border-blue-500 text-blue-500 hover:bg-blue-50"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onChatOpen(store);
+                  }}
+                >
+                  <MessageCircle className="w-4 h-4 mr-1" />
+                  문의하기
+                </Button>
+              )}
+              
+              {userRole === 'guest' && (
+                <p className="text-xs text-gray-500 ml-auto">
+                  문의하려면 로그인이 필요합니다
+                </p>
+              )}
+            </div>
           </CardContent>
         </Card>
       ))}

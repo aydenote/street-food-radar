@@ -2,14 +2,18 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { MapPin, Search, Utensils } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { MapPin, Search, Utensils, User, LogOut } from "lucide-react";
+import { UserRole } from "@/types/user";
 
 interface HeaderProps {
   searchLocation: string;
   setSearchLocation: (location: string) => void;
+  userRole: UserRole;
+  onLogout: () => void;
 }
 
-const Header = ({ searchLocation, setSearchLocation }: HeaderProps) => {
+const Header = ({ searchLocation, setSearchLocation, userRole, onLogout }: HeaderProps) => {
   const [inputValue, setInputValue] = useState("");
 
   const handleSearch = () => {
@@ -23,6 +27,21 @@ const Header = ({ searchLocation, setSearchLocation }: HeaderProps) => {
     setSearchLocation("현재 위치");
   };
 
+  const getUserRoleDisplay = () => {
+    switch (userRole) {
+      case 'guest':
+        return { label: '게스트', color: 'bg-gray-500' };
+      case 'customer':
+        return { label: '일반회원', color: 'bg-green-500' };
+      case 'store':
+        return { label: '가게운영자', color: 'bg-orange-500' };
+      default:
+        return { label: '게스트', color: 'bg-gray-500' };
+    }
+  };
+
+  const roleDisplay = getUserRoleDisplay();
+
   return (
     <div className="bg-white shadow-sm border-b sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 py-4">
@@ -32,6 +51,17 @@ const Header = ({ searchLocation, setSearchLocation }: HeaderProps) => {
               <Utensils className="w-6 h-6 text-white" />
             </div>
             <h1 className="text-xl font-bold text-gray-800">길거리 맛집</h1>
+          </div>
+          
+          <div className="flex items-center space-x-3">
+            <Badge className={`${roleDisplay.color} text-white`}>
+              <User className="w-3 h-3 mr-1" />
+              {roleDisplay.label}
+            </Badge>
+            <Button variant="outline" size="sm" onClick={onLogout}>
+              <LogOut className="w-4 h-4 mr-1" />
+              로그아웃
+            </Button>
           </div>
         </div>
         
