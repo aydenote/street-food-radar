@@ -1,73 +1,68 @@
-# Welcome to your Lovable project
+아래 페르소나를 보고 내가 만들고 싶어하는 길거리 음식점 앱을 프로타입 형태로 만들어줘.
 
-## Project info
+🎯 페르소나
+이름: 김태정
+나이: 28세
+직업: 회사원
+라이프스타일: 평일 정시 출퇴근 / 주말 외출
+행동 패턴: 퇴근 후 간단한 먹거리를 찾음, 갑작스러운 식욕이 생기면 바로 해결하고 싶어함
+목표: 붕어빵, 호떡, 어묵 등 길거리 음식이 먹고 싶을 때, 근처에 어디서 파는지 빠르게 확인하고 찾아가고 싶음
+니즈:
 
-**URL**: https://lovable.dev/projects/e6cd61ed-2c6c-40d8-823b-e19912628318
+내 위치 또는 특정 위치 기준으로 길거리 음식 위치를 빠르게 파악
 
-## How can I edit this code?
+해당 포장마차가 지금 운영 중인지 여부 확인
+페인포인트:
 
-There are several ways of editing your application.
+길거리 음식은 위치와 운영 시간이 고정되어 있지 않아서 찾기 힘듦
 
-**Use Lovable**
+검색이 어렵고, 실시간 정보를 알기 힘듦
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/e6cd61ed-2c6c-40d8-823b-e19912628318) and start prompting.
+📘 사용자 스토리
+직장인으로서, 저는 먹고 싶은 길거리 음식을 주변에서 빠르게 찾고 싶습니다.
+지나가다가 우연히 발견해서 먹는 것이 아니라, 먹고 싶을 때 주도적으로 찾아가고 싶습니다.
 
-Changes made via Lovable will be committed automatically to this repo.
+📱 사용자 시나리오
+시나리오 이름: 퇴근 후 길거리 음식 탐색
 
-**Use your preferred IDE**
+김태정은 붕어빵이 먹고 싶어 앱을 연다
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+"게스트 로그인"을 클릭한다
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+현재 위치를 기반으로 주변 길거리 음식점들이 지도에 표시된다
 
-Follow these steps:
+음식점 중 하나를 클릭하여 영업 여부, 메뉴, 가격 등을 확인한다
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+원하는 음식점을 찾아 방문한다
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+✅ 인수 조건 (Acceptance Criteria)
+Given: 사용자가 앱에 접속했을 때
 
-# Step 3: Install the necessary dependencies.
-npm i
+When: 현재 위치를 자동으로 받거나 특정 위치(예: 선릉역, 봉천로55길 21 등)를 텍스트로 입력하면
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+Then: 해당 위치 근처에 등록된 길거리 음식점 리스트와 정보를 지도에 표시한다
 
-**Edit a file directly in GitHub**
+💡 핵심 가치 제안 (Value Proposition)
+즉시 확인 가능: 직접 가보지 않아도 오픈 여부 확인 가능
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+간편한 인터페이스: 회원가입 없이 게스트 로그인으로 바로 사용 가능
 
-**Use GitHub Codespaces**
+생활 밀착: 실제 생활에서 자주 겪는 불편을 해소하는 실용 앱
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+🧩 핵심 기능 목록
+위치 기반 음식점 탐색: 현재 위치 또는 입력한 위치 기준 주변 길거리 음식점 표시
 
-## What technologies are used for this project?
+지도 연동: 길거리 음식점의 지도상 위치와 정보 확인
 
-This project is built with:
+영업 여부 표시: 오픈/클로즈 상태 표시 (Mock 데이터 기반)
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+간편 로그인: 게스트 로그인 기능 제공
 
-## How can I deploy this project?
+🛠 구현 범위 및 기술 제약
+데이터: 실시간 연동 없이 Mock 데이터로 구성
 
-Simply open [Lovable](https://lovable.dev/projects/e6cd61ed-2c6c-40d8-823b-e19912628318) and click on Share -> Publish.
+기능 범위: 위치 기반 검색, 음식점 정보 표시, 기본적인 지도 연동
 
-## Can I connect a custom domain to my Lovable project?
+UI 목표: 직관적이고 간단한 사용자 경험 제공
 
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+목표 수준: MVP 수준의 프로토타입
