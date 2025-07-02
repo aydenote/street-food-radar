@@ -3,11 +3,14 @@ import { useState } from "react";
 import Header from "@/components/Header";
 import MapView from "@/components/MapView";
 import StoreList from "@/components/StoreList";
-import ChatWindow from "@/components/ChatWindow";
+import StoreDetail from "@/components/StoreDetail";
+import ReservationModal from "@/components/ReservationModal";
+import Community from "@/components/Community";
+import FilterControls from "@/components/FilterControls";
 import { useStores } from "@/hooks/useStores";
-import { UserRole } from "@/types/user"; 
+import { UserRole, Store } from "@/types/user"; 
 import { Button } from "@/components/ui/button";
-import { MessageCircle, X } from "lucide-react";
+import { MessageCircle, X, Map, List, Users } from "lucide-react";
 
 interface MainAppProps {
   userRole: UserRole;
@@ -15,10 +18,38 @@ interface MainAppProps {
 }
 
 const MainApp = ({ userRole, onLogout }: MainAppProps) => {
-  const { stores } = useStores();
-  const [selectedStore, setSelectedStore] = useState(null);
+  const { 
+    getFilteredStores, 
+    getStoreById,
+    posts,
+    addPost,
+    likePost,
+    addReservation
+  } = useStores();
+  
+  const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [searchLocation, setSearchLocation] = useState("현재 위치");
-  const [showChat, setShowChat] = useState(false);
+  const [showStoreDetail, setShowStoreDetail] = useState(false);
+  const [showReservationModal, setShowReservationModal] = useState(false);
+  const [currentView, setCurrentView] = useState<'map' | 'community'>('map');
+  const [menuFilters, setMenuFilters] = useState<string[]>([]);
+  
+  const filteredStores = getFilteredStores(menuFilters);
+
+  const handleStoreSelect = (store: Store) => {
+    setSelectedStore(store);
+    setShowStoreDetail(true);
+  };
+
+  const handleReservationSubmit = (reservationData: any) => {
+    addReservation(reservationData);
+    alert("예약이 성공적으로 접수되었습니다!");
+  };
+
+  const currentUser = {
+    id: Date.now().toString(),
+    name: userRole === 'guest' ? 'Guest' : 'User'
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 relative">
@@ -29,59 +60,96 @@ const MainApp = ({ userRole, onLogout }: MainAppProps) => {
         onLogout={onLogout}
       />
       
-      <div className="flex flex-col lg:flex-row h-[calc(100vh-80px)]">
-        <div className="lg:w-1/2 h-64 lg:h-full">
-          <MapView 
-            stores={stores} 
-            selectedStore={selectedStore}
-            onStoreSelect={setSelectedStore}
-          />
-        </div>
-        
-        <div className="lg:w-1/2 h-full overflow-y-auto">
-          <StoreList 
-            stores={stores}
-            selectedStore={selectedStore}
-            onStoreSelect={setSelectedStore}
-            userRole={userRole}
-            onChatOpen={(store) => {
-              setSelectedStore(store);
-              setShowChat(true);
-            }}
-          />
-        </div>
+      {/* 네비게이션 탭 */}
+      <div className="flex border-b bg-white">
+        <Button
+          variant={currentView === 'map' ? 'default' : 'ghost'}
+          className={`flex-1 rounded-none ${currentView === 'map' ? 'bg-orange-500 hover:bg-orange-600' : ''}`}
+          onClick={() => setCurrentView('map')}
+        >
+          <Map className="w-4 h-4 mr-2" />
+          지도 & 가게목록
+        </Button>
+        <Button
+          variant={currentView === 'community' ? 'default' : 'ghost'}
+          className={`flex-1 rounded-none ${currentView === 'community' ? 'bg-orange-500 hover:bg-orange-600' : ''}`}
+          onClick={() => setCurrentView('community')}
+        >
+          <Users className="w-4 h-4 mr-2" />
+          커뮤니티
+        </Button>
       </div>
 
-      {/* 채팅 모달 */}
-      {showChat && selectedStore && userRole !== 'guest' && (
+      {currentView === 'map' ? (
+        <div className="flex flex-col lg:flex-row h-[calc(100vh-120px)]">
+          <div className="lg:w-1/2 h-64 lg:h-full">
+            <MapView 
+              stores={filteredStores} 
+              selectedStore={selectedStore}
+              onStoreSelect={handleStoreSelect}
+            />
+          </div>
+          
+          <div className="lg:w-1/2 h-full overflow-y-auto">
+            <FilterControls 
+              onFilterChange={setMenuFilters}
+              selectedFilters={menuFilters}
+            />
+            <StoreList 
+              stores={filteredStores}
+              selectedStore={selectedStore}
+              onStoreSelect={handleStoreSelect}
+              userRole={userRole}
+              onChatOpen={(store) => {
+                setSelectedStore(store);
+                setShowStoreDetail(true);
+              }}
+            />
+          </div>
+        </div>
+      ) : (
+        <div className="h-[calc(100vh-120px)] overflow-y-auto">
+          <Community
+            posts={posts}
+            onPostCreate={addPost}
+            onPostLike={likePost}
+            userRole={userRole}
+            userId={currentUser.id}
+            userName={currentUser.name}
+          />
+        </div>
+      )}
+
+      {/* 가게 상세 정보 모달 */}
+      {showStoreDetail && selectedStore && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg w-full max-w-2xl h-[500px] relative">
+          <div className="relative max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <Button
               variant="ghost"
               size="sm"
-              className="absolute top-2 right-2 z-10"
-              onClick={() => setShowChat(false)}
+              className="absolute top-2 right-2 z-10 bg-white shadow-md"
+              onClick={() => setShowStoreDetail(false)}
             >
               <X className="w-4 h-4" />
             </Button>
-            <div className="h-full p-4">
-              <ChatWindow
-                userRole={userRole === 'customer' ? 'customer' : 'customer'}
-                storeName={selectedStore.name}
-              />
-            </div>
+            <StoreDetail
+              store={selectedStore}
+              onReservationClick={() => setShowReservationModal(true)}
+              userRole={userRole}
+            />
           </div>
         </div>
       )}
 
-      {/* 플로팅 채팅 버튼 (고객용) */}
-      {userRole !== 'guest' && selectedStore && !showChat && (
-        <Button
-          className="fixed bottom-6 right-6 rounded-full w-14 h-14 bg-blue-500 hover:bg-blue-600 shadow-lg"
-          onClick={() => setShowChat(true)}
-        >
-          <MessageCircle className="w-6 h-6" />
-        </Button>
+      {/* 예약 모달 */}
+      {showReservationModal && selectedStore && userRole !== 'guest' && (
+        <ReservationModal
+          store={selectedStore}
+          onClose={() => setShowReservationModal(false)}
+          onReservationSubmit={handleReservationSubmit}
+          userId={currentUser.id}
+          userName={currentUser.name}
+        />
       )}
     </div>
   );

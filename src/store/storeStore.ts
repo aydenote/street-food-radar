@@ -1,9 +1,11 @@
 
-import { Store } from "@/types/user";
+import { Store, CommunityPost, Reservation } from "@/types/user";
 
 // 전역 스토어 상태 관리
 class StoreManager {
   private stores: Store[] = [];
+  private posts: CommunityPost[] = [];
+  private reservations: Reservation[] = [];
   private listeners: Array<() => void> = [];
 
   // 초기 목업 데이터 로드
@@ -13,6 +15,7 @@ class StoreManager {
         id: "1",
         name: "할머니 붕어빵",
         category: "붕어빵 · 호떡",
+        description: "30년 전통의 할머니가 직접 만드는 정통 붕어빵집입니다.",
         isOpen: true,
         menu: ["붕어빵", "호떡", "군고구마"],
         location: {
@@ -22,12 +25,16 @@ class StoreManager {
         },
         ownerId: "owner1",
         phone: "010-1234-5678",
-        openingHours: "15:00 - 24:00"
+        openingHours: "15:00 - 24:00",
+        rating: 4.5,
+        reviews: 127,
+        specialties: ["팥붕어빵", "슈크림붕어빵"]
       },
       {
         id: "2", 
         name: "김밥천국 포장마차",
         category: "김밥 · 떡볶이",
+        description: "신선한 재료로 만드는 김밥과 매콤한 떡볶이가 일품입니다.",
         isOpen: true,
         menu: ["떡볶이", "김밥", "순대", "어묵"],
         location: {
@@ -37,12 +44,16 @@ class StoreManager {
         },
         ownerId: "owner2",
         phone: "010-2345-6789",
-        openingHours: "14:00 - 23:00"
+        openingHours: "14:00 - 23:00",
+        rating: 4.2,
+        reviews: 89,
+        specialties: ["참치김밥", "치즈떡볶이"]
       },
       {
         id: "3",
         name: "맛있는 어묵집",
         category: "어묵 · 오뎅",
+        description: "진한 국물과 쫄깃한 어묵이 자랑인 어묵 전문점입니다.",
         isOpen: false,
         menu: ["어묵", "오뎅탕", "만두"],
         location: {
@@ -52,7 +63,39 @@ class StoreManager {
         },
         ownerId: "owner3",
         phone: "010-3456-7890",
-        openingHours: "16:00 - 22:00"
+        openingHours: "16:00 - 22:00",
+        rating: 4.0,
+        reviews: 45,
+        specialties: ["특제어묵", "매운오뎅탕"]
+      }
+    ];
+
+    this.posts = [
+      {
+        id: "1",
+        title: "할머니 붕어빵 정말 맛있어요!",
+        content: "명동에서 30년 된 할머니 붕어빵집인데 정말 맛있습니다. 팥이 꽉 차있고 겉은 바삭해요!",
+        authorId: "user1",
+        authorName: "김맛집",
+        authorRole: "customer",
+        storeId: "1",
+        storeName: "할머니 붕어빵",
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+        likes: 15,
+        comments: []
+      },
+      {
+        id: "2", 
+        title: "떡볶이 맛집 추천드려요",
+        content: "김밥천국 포장마차 떡볶이가 진짜 맛있어요. 매콤하면서도 단맛이 있어서 중독성 있습니다!",
+        authorId: "user2",
+        authorName: "길거리푸드러버",
+        authorRole: "customer",
+        storeId: "2",
+        storeName: "김밥천국 포장마차",
+        createdAt: new Date(Date.now() - 5 * 60 * 60 * 1000),
+        likes: 8,
+        comments: []
       }
     ];
   }
@@ -64,16 +107,19 @@ class StoreManager {
       name: storeData.name,
       category: storeData.category,
       description: storeData.description,
-      isOpen: false, // 기본적으로 영업종료 상태로 시작
+      isOpen: false,
       menu: storeData.menu,
       location: {
-        lat: 37.5665 + (Math.random() - 0.5) * 0.01, // 랜덤 위치 생성
+        lat: 37.5665 + (Math.random() - 0.5) * 0.01,
         lng: 126.9780 + (Math.random() - 0.5) * 0.01,
         address: storeData.address
       },
       ownerId,
       phone: storeData.phone,
-      openingHours: storeData.openingHours
+      openingHours: storeData.openingHours,
+      rating: 0,
+      reviews: 0,
+      specialties: storeData.specialties || []
     };
 
     this.stores.push(newStore);
@@ -90,9 +136,19 @@ class StoreManager {
     }
   }
 
-  // 가게 목록 조회
-  getStores(): Store[] {
-    return [...this.stores];
+  // 가게 목록 조회 (필터링 포함)
+  getStores(menuFilters: string[] = []): Store[] {
+    let filteredStores = [...this.stores];
+    
+    if (menuFilters.length > 0) {
+      filteredStores = filteredStores.filter(store =>
+        menuFilters.some(filter =>
+          store.menu.some(menu => menu.includes(filter))
+        )
+      );
+    }
+    
+    return filteredStores;
   }
 
   // 특정 가게 조회
@@ -103,6 +159,63 @@ class StoreManager {
   // 소유자별 가게 조회
   getStoresByOwner(ownerId: string): Store[] {
     return this.stores.filter(s => s.ownerId === ownerId);
+  }
+
+  // 커뮤니티 포스트 추가
+  addPost(postData: Omit<CommunityPost, 'id' | 'createdAt' | 'likes' | 'comments'>): CommunityPost {
+    const newPost: CommunityPost = {
+      ...postData,
+      id: Date.now().toString(),
+      createdAt: new Date(),
+      likes: 0,
+      comments: []
+    };
+
+    this.posts.unshift(newPost);
+    this.notifyListeners();
+    return newPost;
+  }
+
+  // 포스트 좋아요
+  likePost(postId: string) {
+    const post = this.posts.find(p => p.id === postId);
+    if (post) {
+      post.likes += 1;
+      this.notifyListeners();
+    }
+  }
+
+  // 포스트 목록 조회
+  getPosts(): CommunityPost[] {
+    return [...this.posts];
+  }
+
+  // 예약 추가
+  addReservation(reservationData: Omit<Reservation, 'id' | 'createdAt'>): Reservation {
+    const newReservation: Reservation = {
+      ...reservationData,
+      id: Date.now().toString(),
+      createdAt: new Date()
+    };
+
+    this.reservations.push(newReservation);
+    this.notifyListeners();
+    return newReservation;
+  }
+
+  // 예약 목록 조회
+  getReservations(): Reservation[] {
+    return [...this.reservations];
+  }
+
+  // 가게별 예약 조회
+  getReservationsByStore(storeId: string): Reservation[] {
+    return this.reservations.filter(r => r.storeId === storeId);
+  }
+
+  // 고객별 예약 조회
+  getReservationsByCustomer(customerId: string): Reservation[] {
+    return this.reservations.filter(r => r.customerId === customerId);
   }
 
   // 리스너 등록
