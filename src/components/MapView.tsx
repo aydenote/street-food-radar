@@ -3,20 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { MapPin, Navigation, Locate } from "lucide-react";
 import { Button } from "@/components/ui/button";
-
-interface Store {
-  id: string;
-  name: string;
-  category: string;
-  isOpen: boolean;
-  distance: string;
-  menu: string[];
-  location: {
-    lat: number;
-    lng: number;
-    address: string;
-  };
-}
+import { Store } from "@/types/user";
 
 interface MapViewProps {
   stores: Store[];

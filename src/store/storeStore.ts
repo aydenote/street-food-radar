@@ -67,6 +67,63 @@ class StoreManager {
         rating: 4.0,
         reviews: 45,
         specialties: ["특제어묵", "매운오뎅탕"]
+      },
+      {
+        id: "4",
+        name: "길거리 토스트",
+        category: "토스트 · 샌드위치",
+        description: "바삭한 토스트와 신선한 재료로 만든 샌드위치 전문점입니다.",
+        isOpen: true,
+        menu: ["햄에그토스트", "치즈토스트", "베이컨토스트", "야채토스트"],
+        location: {
+          lat: 37.5655,
+          lng: 126.9775,
+          address: "서울시 중구 소공동 87"
+        },
+        ownerId: "owner4",
+        phone: "010-4567-8901",
+        openingHours: "07:00 - 22:00",
+        rating: 4.3,
+        reviews: 63,
+        specialties: ["베이컨치즈토스트", "아보카도토스트"]
+      },
+      {
+        id: "5",
+        name: "전통 호떡가게",
+        category: "호떡 · 전통간식",
+        description: "달콤한 전통 호떡과 다양한 속재료로 유명한 호떡 전문점입니다.",
+        isOpen: true,
+        menu: ["씨앗호떡", "흑설탕호떡", "녹차호떡"],
+        location: {
+          lat: 37.5675,
+          lng: 126.9795,
+          address: "서울시 중구 을지로1가 16"
+        },
+        ownerId: "owner5",
+        phone: "010-5678-9012",
+        openingHours: "15:00 - 23:00",
+        rating: 4.6,
+        reviews: 98,
+        specialties: ["견과류호떡", "치즈호떡"]
+      },
+      {
+        id: "6",
+        name: "야식이네 포장마차",
+        category: "야식 · 안주",
+        description: "밤늦게까지 영업하는 야식과 안주 전문 포장마차입니다.",
+        isOpen: false,
+        menu: ["라면", "김치찌개", "계란말이", "소시지"],
+        location: {
+          lat: 37.5650,
+          lng: 126.9770,
+          address: "서울시 중구 회현동1가 100-1"
+        },
+        ownerId: "owner6",
+        phone: "010-6789-0123",
+        openingHours: "18:00 - 02:00",
+        rating: 3.8,
+        reviews: 34,
+        specialties: ["진라면", "참치김치찌개"]
       }
     ];
 
