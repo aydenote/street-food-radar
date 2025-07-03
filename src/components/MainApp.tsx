@@ -9,6 +9,7 @@ import Community from "@/components/Community";
 import FilterControls from "@/components/FilterControls";
 import LoginPrompt from "@/components/LoginPrompt";
 import NotificationCenter from "@/components/NotificationCenter";
+import ChatWindow from "@/components/ChatWindow";
 import { useStores } from "@/hooks/useStores";
 import { UserRole, Store } from "@/types/user"; 
 import { Button } from "@/components/ui/button";
@@ -44,6 +45,8 @@ const MainApp = ({ userRole, onLogout, onRoleChange }: MainAppProps) => {
   const [loginPromptFeature, setLoginPromptFeature] = useState("");
   const [currentView, setCurrentView] = useState<'map' | 'community'>('map');
   const [menuFilters, setMenuFilters] = useState<string[]>([]);
+  const [showChat, setShowChat] = useState(false);
+  const [chatStore, setChatStore] = useState<Store | null>(null);
   
   const filteredStores = getFilteredStores(menuFilters);
 
@@ -57,6 +60,15 @@ const MainApp = ({ userRole, onLogout, onRoleChange }: MainAppProps) => {
   const handleStoreSelect = (store: Store) => {
     setSelectedStore(store);
     setShowStoreDetail(true);
+  };
+
+  const handleChatOpen = (store: Store) => {
+    if (userRole === 'guest') {
+      handleLoginRequired("가게 문의");
+      return;
+    }
+    setChatStore(store);
+    setShowChat(true);
   };
 
   const handleLoginRequired = (feature: string = "이 기능") => {
@@ -192,14 +204,7 @@ const MainApp = ({ userRole, onLogout, onRoleChange }: MainAppProps) => {
               selectedStore={selectedStore}
               onStoreSelect={handleStoreSelect}
               userRole={userRole}
-              onChatOpen={(store) => {
-                if (userRole === 'guest') {
-                  handleLoginRequired("가게 문의");
-                  return;
-                }
-                setSelectedStore(store);
-                setShowStoreDetail(true);
-              }}
+              onChatOpen={handleChatOpen}
             />
           </div>
         </div>
@@ -213,6 +218,28 @@ const MainApp = ({ userRole, onLogout, onRoleChange }: MainAppProps) => {
             userId={currentUser.id}
             userName={currentUser.name}
           />
+        </div>
+      )}
+
+      {/* 채팅 창 */}
+      {showChat && chatStore && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="relative max-w-2xl w-full max-h-[90vh] overflow-y-auto bg-white rounded-lg">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="absolute top-2 right-2 z-10 bg-white shadow-md hover:bg-gray-100"
+              onClick={() => setShowChat(false)}
+            >
+              <X className="w-4 h-4" />
+            </Button>
+            <div className="p-4">
+              <ChatWindow
+                userRole={userRole}
+                storeName={chatStore.name}
+              />
+            </div>
+          </div>
         </div>
       )}
 
