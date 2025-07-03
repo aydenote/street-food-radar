@@ -3,21 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Clock, Menu, MessageCircle } from "lucide-react";
-import { UserRole } from "@/types/user";
-
-interface Store {
-  id: string;
-  name: string;
-  category: string;
-  isOpen: boolean;
-  distance: string;
-  menu: string[];
-  location: {
-    lat: number;
-    lng: number;
-    address: string;
-  };
-}
+import { UserRole, Store } from "@/types/user";
 
 interface StoreListProps {
   stores: Store[];
@@ -60,7 +46,9 @@ const StoreList = ({ stores, selectedStore, onStoreSelect, userRole, onChatOpen 
                 >
                   {store.isOpen ? '영업중' : '영업종료'}
                 </Badge>
-                <p className="text-sm text-gray-500">{store.distance}</p>
+                {store.distance && (
+                  <p className="text-sm text-gray-500">{store.distance}</p>
+                )}
               </div>
             </div>
             
