@@ -1,8 +1,9 @@
+
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Heart, MessageCircle, User, Store } from "lucide-react";
+import { Plus, Heart, MessageCircle, User, Store, Home } from "lucide-react";
 import { CommunityPost, UserRole } from "@/types/user";
 import CommunityPostForm from "./CommunityPostForm";
 import PostDetailModal from "./PostDetailModal";
@@ -11,12 +12,14 @@ interface CommunityProps {
   posts: CommunityPost[];
   onPostCreate: (post: Omit<CommunityPost, 'id' | 'createdAt' | 'likes' | 'comments'>) => void;
   onPostLike: (postId: string) => void;
+  onAddComment: (postId: string, comment: string) => void;
+  onGoHome: () => void;
   userRole: UserRole;
   userId: string;
   userName: string;
 }
 
-const Community = ({ posts, onPostCreate, onPostLike, userRole, userId, userName }: CommunityProps) => {
+const Community = ({ posts, onPostCreate, onPostLike, onAddComment, onGoHome, userRole, userId, userName }: CommunityProps) => {
   const [showPostForm, setShowPostForm] = useState(false);
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
 
@@ -39,7 +42,17 @@ const Community = ({ posts, onPostCreate, onPostLike, userRole, userId, userName
   return (
     <div className="max-w-4xl mx-auto p-4">
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">길거리 음식 커뮤니티</h1>
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            onClick={onGoHome}
+            className="flex items-center gap-2"
+          >
+            <Home className="w-4 h-4" />
+            홈으로
+          </Button>
+          <h1 className="text-2xl font-bold text-gray-800">길거리 음식 커뮤니티</h1>
+        </div>
         {userRole !== 'guest' && (
           <Button
             onClick={() => setShowPostForm(true)}
@@ -105,7 +118,10 @@ const Community = ({ posts, onPostCreate, onPostLike, userRole, userId, userName
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={() => onPostLike(post.id)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onPostLike(post.id);
+                  }}
                   className="text-red-500 hover:text-red-600 hover:bg-red-50"
                   disabled={userRole === 'guest'}
                 >
@@ -144,7 +160,10 @@ const Community = ({ posts, onPostCreate, onPostLike, userRole, userId, userName
           post={selectedPost}
           onClose={() => setSelectedPost(null)}
           onPostLike={onPostLike}
+          onAddComment={onAddComment}
           userRole={userRole}
+          userId={userId}
+          userName={userName}
         />
       )}
     </div>

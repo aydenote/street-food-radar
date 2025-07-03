@@ -341,6 +341,20 @@ class StoreManager {
     return [...this.posts];
   }
 
+  // 포스트에 댓글 추가
+  addCommentToPost(postId: string, commentData: Omit<Comment, 'id' | 'createdAt'>) {
+    const post = this.posts.find(p => p.id === postId);
+    if (post) {
+      const newComment = {
+        ...commentData,
+        id: Date.now().toString(),
+        createdAt: new Date()
+      };
+      post.comments.push(newComment);
+      this.notifyListeners();
+    }
+  }
+
   // 예약 추가
   addReservation(reservationData: Omit<Reservation, 'id' | 'createdAt'>): Reservation {
     const newReservation: Reservation = {

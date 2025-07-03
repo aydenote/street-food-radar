@@ -41,6 +41,7 @@ export const useStores = () => {
     incrementStoreViewCount: (storeId: string) => storeManager.incrementStoreViewCount(storeId),
     updateStoreLocation: (storeId: string, lat: number, lng: number, address: string) => 
       storeManager.updateStoreLocation(storeId, lat, lng, address),
-    updateStoreSchedule: (storeId: string, schedule: any) => storeManager.updateStoreSchedule(storeId, schedule)
+    updateStoreSchedule: (storeId: string, schedule: any) => storeManager.updateStoreSchedule(storeId, schedule),
+    addCommentToPost: (postId: string, commentData: any) => storeManager.addCommentToPost(postId, commentData)
   };
 };

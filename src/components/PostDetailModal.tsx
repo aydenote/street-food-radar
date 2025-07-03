@@ -1,19 +1,25 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { X, Heart, MessageCircle, User, Store } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
+import { X, Heart, MessageCircle, User, Store, Send } from "lucide-react";
 import { CommunityPost, UserRole } from "@/types/user";
 
 interface PostDetailModalProps {
   post: CommunityPost;
   onClose: () => void;
   onPostLike: (postId: string) => void;
+  onAddComment: (postId: string, comment: string) => void;
   userRole: UserRole;
+  userId: string;
+  userName: string;
 }
 
-const PostDetailModal = ({ post, onClose, onPostLike, userRole }: PostDetailModalProps) => {
+const PostDetailModal = ({ post, onClose, onPostLike, onAddComment, userRole, userId, userName }: PostDetailModalProps) => {
+  const [newComment, setNewComment] = useState('');
+
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('ko-KR', {
       year: 'numeric',
@@ -22,6 +28,13 @@ const PostDetailModal = ({ post, onClose, onPostLike, userRole }: PostDetailModa
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handleCommentSubmit = () => {
+    if (newComment.trim() && userRole !== 'guest') {
+      onAddComment(post.id, newComment.trim());
+      setNewComment('');
+    }
   };
 
   return (
@@ -96,7 +109,29 @@ const PostDetailModal = ({ post, onClose, onPostLike, userRole }: PostDetailModa
               </div>
             </div>
 
-            {/* 댓글 섹션 */}
+            {/* 댓글 작성 섹션 */}
+            {userRole !== 'guest' && (
+              <div className="mt-6 pt-6 border-t border-gray-100">
+                <h3 className="text-lg font-semibold mb-4">댓글 작성</h3>
+                <div className="flex gap-3">
+                  <Textarea
+                    placeholder="댓글을 입력하세요..."
+                    value={newComment}
+                    onChange={(e) => setNewComment(e.target.value)}
+                    className="flex-1 min-h-[80px]"
+                  />
+                  <Button
+                    onClick={handleCommentSubmit}
+                    disabled={!newComment.trim()}
+                    className="bg-orange-500 hover:bg-orange-600 h-fit"
+                  >
+                    <Send className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+
+            {/* 댓글 목록 */}
             {post.comments.length > 0 && (
               <div className="mt-6 pt-6 border-t border-gray-100">
                 <h3 className="text-lg font-semibold mb-4">댓글 ({post.comments.length})</h3>

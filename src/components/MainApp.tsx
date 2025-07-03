@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import Header from "@/components/Header";
 import MapView from "@/components/MapView";
@@ -30,6 +29,7 @@ const MainApp = ({ userRole, onLogout, onRoleChange }: MainAppProps) => {
     posts,
     addPost,
     likePost,
+    addCommentToPost,
     addReservation,
     getNotificationsByUser,
     markNotificationAsRead,
@@ -131,6 +131,28 @@ const MainApp = ({ userRole, onLogout, onRoleChange }: MainAppProps) => {
     likePost(postId);
   };
 
+  const handleAddComment = (postId: string, comment: string) => {
+    if (userRole === 'guest') {
+      handleLoginRequired("댓글 작성");
+      return;
+    }
+    
+    addCommentToPost(postId, {
+      content: comment,
+      authorId: currentUser.id,
+      authorName: currentUser.name
+    });
+
+    toast({
+      title: "댓글 작성 완료!",
+      description: "댓글이 성공적으로 등록되었습니다.",
+    });
+  };
+
+  const handleGoHome = () => {
+    setCurrentView('map');
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 relative">
       <Header 
@@ -214,6 +236,8 @@ const MainApp = ({ userRole, onLogout, onRoleChange }: MainAppProps) => {
             posts={posts}
             onPostCreate={handlePostCreate}
             onPostLike={handlePostLike}
+            onAddComment={handleAddComment}
+            onGoHome={handleGoHome}
             userRole={userRole}
             userId={currentUser.id}
             userName={currentUser.name}
