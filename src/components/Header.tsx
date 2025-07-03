@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,9 +11,10 @@ interface HeaderProps {
   setSearchLocation: (location: string) => void;
   userRole: UserRole;
   onLogout: () => void;
+  notifications?: ReactNode;
 }
 
-const Header = ({ searchLocation, setSearchLocation, userRole, onLogout }: HeaderProps) => {
+const Header = ({ searchLocation, setSearchLocation, userRole, onLogout, notifications }: HeaderProps) => {
   const [inputValue, setInputValue] = useState("");
 
   const handleSearch = () => {
@@ -54,6 +55,7 @@ const Header = ({ searchLocation, setSearchLocation, userRole, onLogout }: Heade
           </div>
           
           <div className="flex items-center space-x-3">
+            {notifications}
             <Badge className={`${roleDisplay.color} text-white`}>
               <User className="w-3 h-3 mr-1" />
               {roleDisplay.label}

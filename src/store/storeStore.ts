@@ -1,11 +1,13 @@
-
-import { Store, CommunityPost, Reservation } from "@/types/user";
+import { Store, CommunityPost, Reservation, Review, Notification, LocationAnalytics } from "@/types/user";
 
 // 전역 스토어 상태 관리
 class StoreManager {
   private stores: Store[] = [];
   private posts: CommunityPost[] = [];
   private reservations: Reservation[] = [];
+  private reviews: Review[] = [];
+  private notifications: Notification[] = [];
+  private analytics: LocationAnalytics[] = [];
   private listeners: Array<() => void> = [];
 
   // 초기 목업 데이터 로드
@@ -28,7 +30,13 @@ class StoreManager {
         openingHours: "15:00 - 24:00",
         rating: 4.5,
         reviews: 127,
-        specialties: ["팥붕어빵", "슈크림붕어빵"]
+        specialties: ["팥붕어빵", "슈크림붕어빵"],
+        distance: "50m",
+        viewCount: 245,
+        lastLocationUpdate: new Date(Date.now() - 2 * 60 * 1000),
+        isGpsTracked: true,
+        averageRating: 4.5,
+        reviewCount: 127
       },
       {
         id: "2", 
@@ -47,7 +55,16 @@ class StoreManager {
         openingHours: "14:00 - 23:00",
         rating: 4.2,
         reviews: 89,
-        specialties: ["참치김밥", "치즈떡볶이"]
+        specialties: ["참치김밥", "치즈떡볶이"],
+        distance: "120m",
+        viewCount: 189,
+        lastLocationUpdate: new Date(Date.now() - 10 * 60 * 1000),
+        schedule: {
+          monday: { address: "서울시 중구 명동2가 54-1", lat: 37.5660, lng: 126.9785, startTime: "14:00", endTime: "23:00" },
+          tuesday: { address: "서울시 중구 을지로 32", lat: 37.5662, lng: 126.9788, startTime: "14:00", endTime: "23:00" }
+        },
+        averageRating: 4.2,
+        reviewCount: 89
       },
       {
         id: "3",
@@ -66,7 +83,12 @@ class StoreManager {
         openingHours: "16:00 - 22:00",
         rating: 4.0,
         reviews: 45,
-        specialties: ["특제어묵", "매운오뎅탕"]
+        specialties: ["특제어묵", "매운오뎅탕"],
+        distance: "200m",
+        viewCount: 98,
+        lastLocationUpdate: new Date(Date.now() - 45 * 60 * 1000),
+        averageRating: 4.0,
+        reviewCount: 45
       },
       {
         id: "4",
@@ -85,7 +107,13 @@ class StoreManager {
         openingHours: "07:00 - 22:00",
         rating: 4.3,
         reviews: 63,
-        specialties: ["베이컨치즈토스트", "아보카도토스트"]
+        specialties: ["베이컨치즈토스트", "아보카도토스트"],
+        distance: "300m",
+        viewCount: 156,
+        lastLocationUpdate: new Date(Date.now() - 3 * 60 * 1000),
+        isGpsTracked: true,
+        averageRating: 4.3,
+        reviewCount: 63
       },
       {
         id: "5",
@@ -104,7 +132,12 @@ class StoreManager {
         openingHours: "15:00 - 23:00",
         rating: 4.6,
         reviews: 98,
-        specialties: ["견과류호떡", "치즈호떡"]
+        specialties: ["견과류호떡", "치즈호떡"],
+        distance: "350m",
+        viewCount: 203,
+        lastLocationUpdate: new Date(Date.now() - 15 * 60 * 1000),
+        averageRating: 4.6,
+        reviewCount: 98
       },
       {
         id: "6",
@@ -123,7 +156,12 @@ class StoreManager {
         openingHours: "18:00 - 02:00",
         rating: 3.8,
         reviews: 34,
-        specialties: ["진라면", "참치김치찌개"]
+        specialties: ["진라면", "참치김치찌개"],
+        distance: "400m",
+        viewCount: 78,
+        lastLocationUpdate: new Date(Date.now() - 2 * 60 * 60 * 1000),
+        averageRating: 3.8,
+        reviewCount: 34
       }
     ];
 
@@ -154,6 +192,62 @@ class StoreManager {
         likes: 8,
         comments: []
       }
+    ];
+
+    // 리뷰 목 데이터
+    this.reviews = [
+      {
+        id: "r1",
+        storeId: "1",
+        customerId: "user1",
+        customerName: "김맛집",
+        rating: 5,
+        comment: "정말 맛있어요! 할머니가 직접 만드시는 붕어빵이 최고입니다.",
+        createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+        images: []
+      },
+      {
+        id: "r2",
+        storeId: "2",
+        customerId: "user2",
+        customerName: "떡볶이러버",
+        rating: 4,
+        comment: "떡볶이가 매콤하니 맛있네요. 김밥도 푸짐해요!",
+        createdAt: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
+        images: []
+      }
+    ];
+
+    // 알림 목 데이터
+    this.notifications = [
+      {
+        id: "n1",
+        userId: "user1",
+        type: "new_store",
+        title: "새로운 가게가 근처에 오픈했어요!",
+        message: "길거리 토스트가 300m 거리에 새로 문을 열었습니다.",
+        isRead: false,
+        createdAt: new Date(Date.now() - 2 * 60 * 60 * 1000),
+        storeId: "4"
+      },
+      {
+        id: "n2",
+        userId: "user1",
+        type: "store_opened",
+        title: "즐겨찾는 가게가 영업을 시작했어요",
+        message: "할머니 붕어빵이 지금 영업중입니다!",
+        isRead: false,
+        createdAt: new Date(Date.now() - 30 * 60 * 1000),
+        storeId: "1"
+      }
+    ];
+
+    // 분석 목 데이터
+    this.analytics = [
+      { storeId: "1", location: "명동길 26", viewCount: 45, date: "2024-01-01", reservationCount: 8 },
+      { storeId: "1", location: "명동길 26", viewCount: 52, date: "2024-01-02", reservationCount: 12 },
+      { storeId: "2", location: "명동2가 54-1", viewCount: 38, date: "2024-01-01", reservationCount: 6 },
+      { storeId: "2", location: "을지로 32", viewCount: 41, date: "2024-01-02", reservationCount: 9 }
     ];
   }
 
@@ -273,6 +367,97 @@ class StoreManager {
   // 고객별 예약 조회
   getReservationsByCustomer(customerId: string): Reservation[] {
     return this.reservations.filter(r => r.customerId === customerId);
+  }
+
+  // 리뷰 관련 메서드
+  addReview(reviewData: Omit<Review, 'id' | 'createdAt'>): Review {
+    const newReview: Review = {
+      ...reviewData,
+      id: Date.now().toString(),
+      createdAt: new Date()
+    };
+
+    this.reviews.push(newReview);
+    this.updateStoreRating(reviewData.storeId);
+    this.notifyListeners();
+    return newReview;
+  }
+
+  getReviewsByStore(storeId: string): Review[] {
+    return this.reviews.filter(r => r.storeId === storeId);
+  }
+
+  private updateStoreRating(storeId: string) {
+    const storeReviews = this.getReviewsByStore(storeId);
+    const store = this.stores.find(s => s.id === storeId);
+    
+    if (store && storeReviews.length > 0) {
+      const avgRating = storeReviews.reduce((sum, r) => sum + r.rating, 0) / storeReviews.length;
+      store.averageRating = Math.round(avgRating * 10) / 10;
+      store.reviewCount = storeReviews.length;
+    }
+  }
+
+  // 알림 관련 메서드
+  addNotification(notificationData: Omit<Notification, 'id' | 'createdAt'>): Notification {
+    const newNotification: Notification = {
+      ...notificationData,
+      id: Date.now().toString(),
+      createdAt: new Date()
+    };
+
+    this.notifications.unshift(newNotification);
+    this.notifyListeners();
+    return newNotification;
+  }
+
+  getNotificationsByUser(userId: string): Notification[] {
+    return this.notifications.filter(n => n.userId === userId);
+  }
+
+  markNotificationAsRead(notificationId: string) {
+    const notification = this.notifications.find(n => n.id === notificationId);
+    if (notification) {
+      notification.isRead = true;
+      this.notifyListeners();
+    }
+  }
+
+  markAllNotificationsAsRead(userId: string) {
+    this.notifications
+      .filter(n => n.userId === userId)
+      .forEach(n => n.isRead = true);
+    this.notifyListeners();
+  }
+
+  // 분석 관련 메서드
+  getAnalyticsByStore(storeId: string): LocationAnalytics[] {
+    return this.analytics.filter(a => a.storeId === storeId);
+  }
+
+  incrementStoreViewCount(storeId: string) {
+    const store = this.stores.find(s => s.id === storeId);
+    if (store) {
+      store.viewCount = (store.viewCount || 0) + 1;
+      this.notifyListeners();
+    }
+  }
+
+  updateStoreLocation(storeId: string, lat: number, lng: number, address: string) {
+    const store = this.stores.find(s => s.id === storeId);
+    if (store) {
+      store.location = { lat, lng, address };
+      store.lastLocationUpdate = new Date();
+      this.notifyListeners();
+    }
+  }
+
+  updateStoreSchedule(storeId: string, schedule: any) {
+    const store = this.stores.find(s => s.id === storeId);
+    if (store) {
+      store.schedule = schedule;
+      this.notifyListeners();
+    }
   }
 
   // 리스너 등록

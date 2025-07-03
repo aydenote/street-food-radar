@@ -26,6 +26,42 @@ export interface Store {
   rating?: number;
   reviews?: number;
   specialties?: string[];
+  distance?: string;
+  viewCount?: number;
+  schedule?: WeeklySchedule;
+  isGpsTracked?: boolean;
+  lastLocationUpdate?: Date;
+  averageRating?: number;
+  reviewCount?: number;
+}
+
+export interface WeeklySchedule {
+  monday?: LocationSchedule;
+  tuesday?: LocationSchedule;
+  wednesday?: LocationSchedule;
+  thursday?: LocationSchedule;
+  friday?: LocationSchedule;
+  saturday?: LocationSchedule;
+  sunday?: LocationSchedule;
+}
+
+export interface LocationSchedule {
+  address: string;
+  lat: number;
+  lng: number;
+  startTime: string;
+  endTime: string;
+}
+
+export interface Review {
+  id: string;
+  storeId: string;
+  customerId: string;
+  customerName: string;
+  rating: number;
+  comment: string;
+  createdAt: Date;
+  images?: string[];
 }
 
 export interface CommunityPost {
@@ -61,4 +97,23 @@ export interface Reservation {
   menu: string[];
   status: 'pending' | 'confirmed' | 'cancelled';
   createdAt: Date;
+}
+
+export interface Notification {
+  id: string;
+  userId: string;
+  type: 'new_store' | 'store_opened' | 'reservation_confirmed' | 'review_reply';
+  title: string;
+  message: string;
+  isRead: boolean;
+  createdAt: Date;
+  storeId?: string;
+}
+
+export interface LocationAnalytics {
+  storeId: string;
+  location: string;
+  viewCount: number;
+  date: string;
+  reservationCount: number;
 }

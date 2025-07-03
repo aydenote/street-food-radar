@@ -7,6 +7,8 @@ import StoreDetail from "@/components/StoreDetail";
 import ReservationModal from "@/components/ReservationModal";
 import Community from "@/components/Community";
 import FilterControls from "@/components/FilterControls";
+import LoginPrompt from "@/components/LoginPrompt";
+import NotificationCenter from "@/components/NotificationCenter";
 import { useStores } from "@/hooks/useStores";
 import { UserRole, Store } from "@/types/user"; 
 import { Button } from "@/components/ui/button";
@@ -15,40 +17,70 @@ import { MessageCircle, X, Map, List, Users } from "lucide-react";
 interface MainAppProps {
   userRole: UserRole;
   onLogout: () => void;
+  onRoleChange?: (role: UserRole) => void;
 }
 
-const MainApp = ({ userRole, onLogout }: MainAppProps) => {
+const MainApp = ({ userRole, onLogout, onRoleChange }: MainAppProps) => {
   const { 
     getFilteredStores, 
     getStoreById,
     posts,
     addPost,
     likePost,
-    addReservation
+    addReservation,
+    getNotificationsByUser,
+    markNotificationAsRead,
+    markAllNotificationsAsRead,
+    addNotification
   } = useStores();
   
   const [selectedStore, setSelectedStore] = useState<Store | null>(null);
   const [searchLocation, setSearchLocation] = useState("현재 위치");
   const [showStoreDetail, setShowStoreDetail] = useState(false);
   const [showReservationModal, setShowReservationModal] = useState(false);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [loginPromptFeature, setLoginPromptFeature] = useState("");
   const [currentView, setCurrentView] = useState<'map' | 'community'>('map');
   const [menuFilters, setMenuFilters] = useState<string[]>([]);
   
   const filteredStores = getFilteredStores(menuFilters);
+
+  const currentUser = {
+    id: userRole === 'guest' ? 'guest' : Date.now().toString(),
+    name: userRole === 'guest' ? 'Guest' : 'User'
+  };
+
+  const notifications = userRole !== 'guest' ? getNotificationsByUser(currentUser.id) : [];
 
   const handleStoreSelect = (store: Store) => {
     setSelectedStore(store);
     setShowStoreDetail(true);
   };
 
-  const handleReservationSubmit = (reservationData: any) => {
-    addReservation(reservationData);
-    alert("예약이 성공적으로 접수되었습니다!");
+  const handleLoginRequired = (feature: string = "이 기능") => {
+    setLoginPromptFeature(feature);
+    setShowLoginPrompt(true);
   };
 
-  const currentUser = {
-    id: Date.now().toString(),
-    name: userRole === 'guest' ? 'Guest' : 'User'
+  const handleLoginPromptLogin = () => {
+    setShowLoginPrompt(false);
+    onRoleChange?.('customer');
+  };
+
+  const handleReservationSubmit = (reservationData: any) => {
+    addReservation(reservationData);
+    
+    // 예약 확인 알림 추가
+    addNotification({
+      userId: currentUser.id,
+      type: 'reservation_confirmed',
+      title: '예약이 확정되었습니다',
+      message: `${selectedStore?.name}에 예약이 성공적으로 접수되었습니다.`,
+      isRead: false,
+      storeId: selectedStore?.id
+    });
+    
+    alert("예약이 성공적으로 접수되었습니다!");
   };
 
   return (
@@ -58,6 +90,13 @@ const MainApp = ({ userRole, onLogout }: MainAppProps) => {
         setSearchLocation={setSearchLocation}
         userRole={userRole}
         onLogout={onLogout}
+        notifications={userRole !== 'guest' ? (
+          <NotificationCenter
+            notifications={notifications}
+            onMarkAsRead={markNotificationAsRead}
+            onMarkAllAsRead={() => markAllNotificationsAsRead(currentUser.id)}
+          />
+        ) : undefined}
       />
       
       {/* 네비게이션 탭 */}
@@ -136,6 +175,9 @@ const MainApp = ({ userRole, onLogout }: MainAppProps) => {
               store={selectedStore}
               onReservationClick={() => setShowReservationModal(true)}
               userRole={userRole}
+              userId={currentUser.id}
+              userName={currentUser.name}
+              onLoginRequired={() => handleLoginRequired("상세 정보 보기")}
             />
           </div>
         </div>
@@ -149,6 +191,15 @@ const MainApp = ({ userRole, onLogout }: MainAppProps) => {
           onReservationSubmit={handleReservationSubmit}
           userId={currentUser.id}
           userName={currentUser.name}
+        />
+      )}
+
+      {/* 로그인 유도 모달 */}
+      {showLoginPrompt && (
+        <LoginPrompt
+          feature={loginPromptFeature}
+          onLogin={handleLoginPromptLogin}
+          onCancel={() => setShowLoginPrompt(false)}
         />
       )}
     </div>

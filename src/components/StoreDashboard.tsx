@@ -1,12 +1,14 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Store, MessageCircle, Settings, BarChart3, Clock } from "lucide-react";
+import { Store, MessageCircle, Settings, BarChart3, Clock, MapPin, Wifi } from "lucide-react";
 import ChatWindow from "./ChatWindow";
+import StoreAnalytics from "./StoreAnalytics";
+import ScheduleManager from "./ScheduleManager";
+import LocationTrustBadge from "./LocationTrustBadge";
 import { useStores } from "@/hooks/useStores";
 
 interface StoreDashboardProps {
@@ -15,9 +17,16 @@ interface StoreDashboardProps {
 }
 
 const StoreDashboard = ({ userId, onLogout }: StoreDashboardProps) => {
-  const { getStoresByOwner, updateStoreStatus } = useStores();
+  const { 
+    getStoresByOwner, 
+    updateStoreStatus, 
+    getAnalyticsByStore,
+    updateStoreLocation,
+    updateStoreSchedule
+  } = useStores();
+  
   const [userStores, setUserStores] = useState(getStoresByOwner(userId));
-  const [showChat, setShowChat] = useState(false);
+  const [isGpsEnabled, setIsGpsEnabled] = useState(false);
 
   // 사용자의 가게 정보 업데이트
   useEffect(() => {
@@ -49,6 +58,28 @@ const StoreDashboard = ({ userId, onLogout }: StoreDashboardProps) => {
     updateStoreStatus(storeData.id, isOpen);
   };
 
+  const handleGpsToggle = (enabled: boolean) => {
+    setIsGpsEnabled(enabled);
+    if (enabled) {
+      // GPS 위치 추적 시뮬레이션
+      navigator.geolocation?.getCurrentPosition(
+        (position) => {
+          updateStoreLocation(
+            storeData.id,
+            position.coords.latitude,
+            position.coords.longitude,
+            "GPS 기반 현재 위치"
+          );
+        },
+        (error) => {
+          console.log("GPS 위치를 가져올 수 없습니다:", error);
+        }
+      );
+    }
+  };
+
+  const storeAnalytics = getAnalyticsByStore(storeData.id);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -62,9 +93,17 @@ const StoreDashboard = ({ userId, onLogout }: StoreDashboardProps) => {
               <div>
                 <h1 className="text-xl font-bold text-gray-800">{storeData.name}</h1>
                 <p className="text-sm text-gray-600">{storeData.category}</p>
+                <LocationTrustBadge store={storeData} />
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-600">GPS 추적</span>
+                <Switch
+                  checked={isGpsEnabled}
+                  onCheckedChange={handleGpsToggle}
+                />
+              </div>
               <div className="flex items-center space-x-2">
                 <span className="text-sm text-gray-600">영업상태</span>
                 <Switch
@@ -87,6 +126,8 @@ const StoreDashboard = ({ userId, onLogout }: StoreDashboardProps) => {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList>
             <TabsTrigger value="overview">대시보드</TabsTrigger>
+            <TabsTrigger value="analytics">성과 분석</TabsTrigger>
+            <TabsTrigger value="schedule">스케줄 관리</TabsTrigger>
             <TabsTrigger value="messages">고객 소통</TabsTrigger>
             <TabsTrigger value="settings">가게 설정</TabsTrigger>
           </TabsList>
@@ -96,20 +137,20 @@ const StoreDashboard = ({ userId, onLogout }: StoreDashboardProps) => {
               <Card>
                 <CardHeader className="pb-2">
                   <CardDescription>오늘 조회수</CardDescription>
-                  <CardTitle className="text-2xl">124</CardTitle>
+                  <CardTitle className="text-2xl">{storeData.viewCount || 0}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-xs text-green-600">+12% from yesterday</p>
+                  <p className="text-xs text-green-600">실시간 업데이트</p>
                 </CardContent>
               </Card>
               
               <Card>
                 <CardHeader className="pb-2">
-                  <CardDescription>받은 문의</CardDescription>
-                  <CardTitle className="text-2xl">8</CardTitle>
+                  <CardDescription>받은 리뷰</CardDescription>
+                  <CardTitle className="text-2xl">{storeData.reviewCount || 0}</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-xs text-blue-600">새로운 메시지 3개</p>
+                  <p className="text-xs text-blue-600">평균 {storeData.averageRating?.toFixed(1) || 0}점</p>
                 </CardContent>
               </Card>
               
@@ -190,6 +231,17 @@ const StoreDashboard = ({ userId, onLogout }: StoreDashboardProps) => {
             </div>
           </TabsContent>
 
+          <TabsContent value="analytics">
+            <StoreAnalytics storeId={storeData.id} analytics={storeAnalytics} />
+          </TabsContent>
+
+          <TabsContent value="schedule">
+            <ScheduleManager 
+              schedule={storeData.schedule}
+              onScheduleUpdate={(schedule) => updateStoreSchedule(storeData.id, schedule)}
+            />
+          </TabsContent>
+
           <TabsContent value="messages">
             <Card>
               <CardHeader>
@@ -209,7 +261,26 @@ const StoreDashboard = ({ userId, onLogout }: StoreDashboardProps) => {
                 <CardDescription>가게 정보를 수정할 수 있습니다</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600">설정 페이지는 추후 구현됩니다.</p>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 border rounded-lg">
+                    <div>
+                      <h4 className="font-medium">실시간 GPS 추적</h4>
+                      <p className="text-sm text-gray-600">고객들이 실시간으로 가게 위치를 확인할 수 있습니다</p>
+                    </div>
+                    <Switch
+                      checked={isGpsEnabled}
+                      onCheckedChange={handleGpsToggle}
+                    />
+                  </div>
+                  
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-2">위치 신뢰도</h4>
+                    <LocationTrustBadge store={storeData} />
+                    <p className="text-sm text-gray-600 mt-2">
+                      마지막 위치 업데이트: {storeData.lastLocationUpdate?.toLocaleString('ko-KR') || '미확인'}
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           </TabsContent>
