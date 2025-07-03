@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,6 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Heart, MessageCircle, User, Store } from "lucide-react";
 import { CommunityPost, UserRole } from "@/types/user";
 import CommunityPostForm from "./CommunityPostForm";
+import PostDetailModal from "./PostDetailModal";
 
 interface CommunityProps {
   posts: CommunityPost[];
@@ -18,6 +18,7 @@ interface CommunityProps {
 
 const Community = ({ posts, onPostCreate, onPostLike, userRole, userId, userName }: CommunityProps) => {
   const [showPostForm, setShowPostForm] = useState(false);
+  const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
 
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('ko-KR', {
@@ -27,6 +28,12 @@ const Community = ({ posts, onPostCreate, onPostLike, userRole, userId, userName
       hour: '2-digit',
       minute: '2-digit'
     });
+  };
+
+  const handlePostClick = (post: CommunityPost) => {
+    if (userRole !== 'guest') {
+      setSelectedPost(post);
+    }
   };
 
   return (
@@ -56,7 +63,11 @@ const Community = ({ posts, onPostCreate, onPostLike, userRole, userId, userName
 
       <div className="space-y-4">
         {posts.map(post => (
-          <Card key={post.id} className="hover:shadow-md transition-shadow">
+          <Card 
+            key={post.id} 
+            className={`hover:shadow-md transition-shadow ${userRole !== 'guest' ? 'cursor-pointer' : ''}`}
+            onClick={() => handlePostClick(post)}
+          >
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div>
@@ -123,6 +134,16 @@ const Community = ({ posts, onPostCreate, onPostLike, userRole, userId, userName
             });
             setShowPostForm(false);
           }}
+          userRole={userRole}
+        />
+      )}
+
+      {/* 게시글 상세보기 모달 */}
+      {selectedPost && userRole !== 'guest' && (
+        <PostDetailModal
+          post={selectedPost}
+          onClose={() => setSelectedPost(null)}
+          onPostLike={onPostLike}
           userRole={userRole}
         />
       )}
