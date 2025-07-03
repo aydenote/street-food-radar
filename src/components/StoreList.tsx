@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, Clock, Menu, MessageCircle } from "lucide-react";
 import { UserRole, Store } from "@/types/user";
+import LocationTrustBadge from "./LocationTrustBadge";
 
 interface StoreListProps {
   stores: Store[];
@@ -31,11 +32,12 @@ const StoreList = ({ stores, selectedStore, onStoreSelect, userRole, onChatOpen 
         >
           <CardContent className="p-4">
             <div className="flex items-start justify-between mb-3">
-              <div>
+              <div className="flex-1">
                 <h3 className="font-semibold text-gray-800 mb-1">{store.name}</h3>
-                <p className="text-sm text-gray-600">{store.category}</p>
+                <p className="text-sm text-gray-600 mb-2">{store.category}</p>
+                <LocationTrustBadge store={store} />
               </div>
-              <div className="text-right">
+              <div className="text-right ml-4">
                 <Badge 
                   variant={store.isOpen ? "default" : "secondary"}
                   className={`mb-2 ${
@@ -53,7 +55,7 @@ const StoreList = ({ stores, selectedStore, onStoreSelect, userRole, onChatOpen 
             </div>
             
             <div className="flex items-center text-sm text-gray-600 mb-3">
-              <MapPin className="w-4 h-4 mr-1" />
+              <MapPin className="w-4 h-4 mr-1 flex-shrink-0" />
               <span className="truncate">{store.location.address}</span>
             </div>
             
@@ -112,6 +114,13 @@ const StoreList = ({ stores, selectedStore, onStoreSelect, userRole, onChatOpen 
           </CardContent>
         </Card>
       ))}
+      
+      {stores.length === 0 && (
+        <div className="text-center py-12 text-gray-500">
+          <p className="text-lg mb-2">주변에 가게가 없습니다</p>
+          <p className="text-sm">다른 지역을 검색해보세요</p>
+        </div>
+      )}
     </div>
   );
 };

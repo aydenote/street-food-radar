@@ -13,6 +13,7 @@ import { useStores } from "@/hooks/useStores";
 import { UserRole, Store } from "@/types/user"; 
 import { Button } from "@/components/ui/button";
 import { MessageCircle, X, Map, List, Users } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface MainAppProps {
   userRole: UserRole;
@@ -21,6 +22,7 @@ interface MainAppProps {
 }
 
 const MainApp = ({ userRole, onLogout, onRoleChange }: MainAppProps) => {
+  const { toast } = useToast();
   const { 
     getFilteredStores, 
     getStoreById,
@@ -65,9 +67,18 @@ const MainApp = ({ userRole, onLogout, onRoleChange }: MainAppProps) => {
   const handleLoginPromptLogin = () => {
     setShowLoginPrompt(false);
     onRoleChange?.('customer');
+    toast({
+      title: "로그인 완료!",
+      description: "이제 모든 기능을 이용하실 수 있습니다.",
+    });
   };
 
   const handleReservationSubmit = (reservationData: any) => {
+    if (userRole === 'guest') {
+      handleLoginRequired("예약 기능");
+      return;
+    }
+
     addReservation(reservationData);
     
     // 예약 확인 알림 추가
@@ -80,7 +91,32 @@ const MainApp = ({ userRole, onLogout, onRoleChange }: MainAppProps) => {
       storeId: selectedStore?.id
     });
     
-    alert("예약이 성공적으로 접수되었습니다!");
+    toast({
+      title: "예약 완료!",
+      description: `${selectedStore?.name}에 예약이 성공적으로 접수되었습니다.`,
+    });
+
+    setShowReservationModal(false);
+  };
+
+  const handlePostCreate = (postData: any) => {
+    if (userRole === 'guest') {
+      handleLoginRequired("커뮤니티 글 작성");
+      return;
+    }
+    addPost(postData);
+    toast({
+      title: "게시글 작성 완료!",
+      description: "커뮤니티에 글이 등록되었습니다.",
+    });
+  };
+
+  const handlePostLike = (postId: string) => {
+    if (userRole === 'guest') {
+      handleLoginRequired("좋아요 기능");
+      return;
+    }
+    likePost(postId);
   };
 
   return (
@@ -98,6 +134,23 @@ const MainApp = ({ userRole, onLogout, onRoleChange }: MainAppProps) => {
           />
         ) : undefined}
       />
+      
+      {/* 게스트 사용자를 위한 안내 배너 */}
+      {userRole === 'guest' && (
+        <div className="bg-gradient-to-r from-orange-500 to-red-500 text-white p-3 text-center">
+          <p className="text-sm">
+            🎉 더 많은 기능을 이용하려면 로그인하세요! (즐겨찾기, 리뷰 작성, 예약 등)
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="ml-2 text-white hover:bg-white/20"
+              onClick={() => onRoleChange?.('customer')}
+            >
+              로그인하기
+            </Button>
+          </p>
+        </div>
+      )}
       
       {/* 네비게이션 탭 */}
       <div className="flex border-b bg-white">
@@ -120,7 +173,7 @@ const MainApp = ({ userRole, onLogout, onRoleChange }: MainAppProps) => {
       </div>
 
       {currentView === 'map' ? (
-        <div className="flex flex-col lg:flex-row h-[calc(100vh-120px)]">
+        <div className="flex flex-col lg:flex-row h-[calc(100vh-160px)]">
           <div className="lg:w-1/2 h-64 lg:h-full">
             <MapView 
               stores={filteredStores} 
@@ -140,6 +193,10 @@ const MainApp = ({ userRole, onLogout, onRoleChange }: MainAppProps) => {
               onStoreSelect={handleStoreSelect}
               userRole={userRole}
               onChatOpen={(store) => {
+                if (userRole === 'guest') {
+                  handleLoginRequired("가게 문의");
+                  return;
+                }
                 setSelectedStore(store);
                 setShowStoreDetail(true);
               }}
@@ -147,11 +204,11 @@ const MainApp = ({ userRole, onLogout, onRoleChange }: MainAppProps) => {
           </div>
         </div>
       ) : (
-        <div className="h-[calc(100vh-120px)] overflow-y-auto">
+        <div className="h-[calc(100vh-160px)] overflow-y-auto">
           <Community
             posts={posts}
-            onPostCreate={addPost}
-            onPostLike={likePost}
+            onPostCreate={handlePostCreate}
+            onPostLike={handlePostLike}
             userRole={userRole}
             userId={currentUser.id}
             userName={currentUser.name}
@@ -166,18 +223,24 @@ const MainApp = ({ userRole, onLogout, onRoleChange }: MainAppProps) => {
             <Button
               variant="ghost"
               size="sm"
-              className="absolute top-2 right-2 z-10 bg-white shadow-md"
+              className="absolute top-2 right-2 z-10 bg-white shadow-md hover:bg-gray-100"
               onClick={() => setShowStoreDetail(false)}
             >
               <X className="w-4 h-4" />
             </Button>
             <StoreDetail
               store={selectedStore}
-              onReservationClick={() => setShowReservationModal(true)}
+              onReservationClick={() => {
+                if (userRole === 'guest') {
+                  handleLoginRequired("예약 기능");
+                  return;
+                }
+                setShowReservationModal(true);
+              }}
               userRole={userRole}
               userId={currentUser.id}
               userName={currentUser.name}
-              onLoginRequired={() => handleLoginRequired("상세 정보 보기")}
+              onLoginRequired={() => handleLoginRequired("상세 정보 이용")}
             />
           </div>
         </div>
